@@ -1,51 +1,49 @@
-import { useEffect, useState } from "react";
-import { useHistory } from "react-router";
+import React, { useEffect, useState } from 'react';
+import { useHistory } from 'react-router-dom';
 
 export default function MyAccount({ accessToken, userId }) {
-	const [firstName, setFirstName] = useState('');
-	const [lastName, setLastName] = useState('');
-	const [username, setUsername] = useState('');
-	const [email, setEmail] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
 
-	const history = useHistory();
+  const history = useHistory();
 
-	useEffect(() => {
-		if (!accessToken) {
-			history.push('/login');
-			return;
-		}
+  useEffect(() => {
+    if (!accessToken) {
+      history.push('/login');
+      return;
+    }
 
-		const headers = new Headers();
-		headers.append('Authorization', `Bearer ${accessToken}`);
+    const headers = new Headers();
+    headers.append('Authorization', `Bearer ${accessToken}`);
 
-		fetch(`http://localhost:8082/user/${userId}`, {
-			method: 'GET',
-			headers,
-		}).then((response) => response.json())
-			.then((content) => {
-				setFirstName(content.first_name);
-				setLastName(content.last_name);
-				setUsername(content.username);
-				setEmail(content.email);
-			});
-	});
+    fetch(`http://localhost:8082/user/${userId}`, {
+      method: 'GET',
+      headers,
+    }).then((response) => response.json())
+      .then((content) => {
+        setFirstName(content.first_name);
+        setLastName(content.last_name);
+        setUsername(content.username);
+        setEmail(content.email);
+      });
+  });
 
-	return (
-		<>
-			{
-				accessToken ?
-					(
-					<div>
-						<h1>MyAccount</h1>
-						<div>First name: {firstName}</div>
-						<div>Last name: {lastName}</div>
-						<div>Username: {username}</div>
-						<div>Email: {email}</div>
-					</div>
-					)
-				:
-					''
-			}
-		</>
-	);
+  return (
+    <>
+      {
+        accessToken ?
+          (
+            <div>
+              <h1>MyAccount</h1>
+              <div>First name: {firstName}</div>
+              <div>Last name: {lastName}</div>
+              <div>Username: {username}</div>
+              <div>Email: {email}</div>
+            </div>
+          ) : ''
+      }
+    </>
+  );
 }

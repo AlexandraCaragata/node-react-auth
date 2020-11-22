@@ -1,0 +1,7 @@
+auth/node_modules
+auth-node/node_modules
+
+auth-node/package-lock.json
+auth/yarn.lock
+
+auth-node/.env

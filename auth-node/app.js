@@ -46,6 +46,10 @@ app.get('/user/:id', authenticateToken, (req, res) => {
 		});
 });
 
+app.get('/content', authenticateToken, (req, res) => {
+	return res.status(200).send({ content: 'This will be a bunch of content for which the user needs to be logged in'});
+});
+
 function authenticateToken(req, res, next) {
 	const authHeader = req.headers['authorization'];
 	const token = authHeader && authHeader.split(' ')[1];

@@ -5,6 +5,9 @@ import Home from "../pages/Home";
 import Signup from "../pages/Signup";
 import Login from "../pages/Login";
 import MyAccount from "../pages/MyAccount";
+import Content from "../pages/Content";
+import ResetPassword from "../pages/ResetPassword";
+import NewPassword from "../pages/NewPassword";
 
 function App() {
   const [accessToken, setAccessToken] = useState(undefined);
@@ -18,7 +21,7 @@ function App() {
     if (localStorage.getItem('userId')) {
       setUserId(localStorage.getItem('userId'));
     }
-  });
+  }, []);
 
   const logout = () => {
     setAccessToken(undefined);
@@ -40,19 +43,24 @@ function App() {
       <div className='App'>
         <nav>
           <Link to="/" className="nav-link">Home</Link>
-          {accessToken ? <Link to="/my-account">My Account</Link> : ''}
+          {accessToken ? <Link to="/content" className='nav-link'>Content</Link> : ''}
 
           <div className='right-container'>
+            {accessToken ? <Link to="/my-account" className='nav-link'>My Account</Link> : ''}
+            {accessToken ? <button onClick={logout}><a href="/">Logout</a></button> : ''}
+
             {!accessToken ? <Link to="/login" className='nav-link'>Login</Link> : ''}
             {!accessToken ? <Link to="/sign-up" className='nav-link'>Sign up</Link> : ''}
-            {accessToken ? <button onClick={logout}><a href="/">Logout</a></button> : ''}
           </div>
         </nav>
 
         <Switch>
+          <Route path="/content" component={() => <Content accessToken={accessToken} />} />
           <Route path="/my-account" component={() => <MyAccount accessToken={accessToken} userId={userId}/>} />
           <Route path="/login" component={() => <Login onUserAuth={(userObject) => handleUserAuth(userObject)} accessToken={accessToken} />} />
           <Route path="/sign-up" component={() => <Signup accessToken={accessToken} />} />
+          <Route path="/reset-password" component={() => <ResetPassword />} />
+          <Route path="/new-password/:token" component={() => <NewPassword />} />
           <Route exact path="/" component={() => <Home />} />
         </Switch>
       </div>

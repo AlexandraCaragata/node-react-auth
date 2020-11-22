@@ -46,12 +46,13 @@ export default function Signup({ accessToken }) {
 			}),
 		}).then((response) => response.json())
 			.then((content) => {
-				if (content.success) {
-					setSuccessMessage('User was successfully created! Check your mail to validate yourself!');
-				}
-
 				if (content.error) {
 					setErrorMessage(content.errorMessage);
+					return;
+				}
+
+				if (content.success) {
+					setSuccessMessage('User was successfully created! Check your mail to validate yourself!');
 				}
 			});
 

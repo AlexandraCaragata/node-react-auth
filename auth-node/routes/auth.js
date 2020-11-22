@@ -20,7 +20,7 @@ router.post('/auth/sign-up', async (req, res) => {
 		}
 
 		try {
-			await sendEmail(user.email, results.insertId);
+			await sendEmailToVerifyUser(user.email, results.insertId);
 		} catch (e) {
 			console.log(e);
 			return res.status(500).send({ error: true, errorMessage: 'Could not send a verification email!' });
@@ -76,6 +76,53 @@ router.post('/auth/login', async (req, res) => {
 		});
 });
 
+router.post('/auth/reset-password', async (req, res) => {
+	const { username, email } = req.body;
+
+	connection.query(
+		'SELECT id FROM users WHERE username = ? AND email = ?',
+		[username, email],
+		async function (error, results, fields) {
+			if (error) {
+				console.log(error);
+				return res.status(500).send({ error: true, errorMessage: 'Something went wrong!' });
+			}
+
+			if (!results.length) {
+				return res.status(401).send({ error: true, errorMessage: 'Invalid credentials!' });
+			}
+
+			const token = jwt.sign({ userId: results[0].id }, process.env.ACCESS_RESET_PASSWORD_SECRET_TOKEN);
+
+			try {
+				await sendEmailToResetPassword(email, token);
+			} catch (e) {
+				console.log(e);
+				return res.status(500).send({ error: true, errorMessage: 'Could not send a password reset email!' });
+			}
+
+			return res.status(200).send({ success: true, successMessage: 'Please verify your email to reset the password' });
+		});
+});
+
+router.post('/auth/new-password', authenticateToken, async (req, res) => {
+	const { userId } = req;
+	const { password } = req.body;
+	const hash = await hashPassword(password);
+
+	connection.query(
+		'UPDATE users SET hash = ? WHERE id = ?',
+		[hash, userId],
+		async function (error, results, fields) {
+			if (error) {
+				console.log(error);
+				return res.status(500).send({ error: true, errorMessage: 'Something went wrong!' });
+			}
+
+			return res.status(200).send({ success: true });
+		});
+});
+
 
 async function hashPassword(password) {
 	return await bcrypt.hash(password, saltRounds);
@@ -85,10 +132,10 @@ async function verifyUser(password, hash) {
 	return await bcrypt.compare(password, hash);
 }
 
-async function sendEmail(emailTo, userId) {
+async function getEmailTransporter() {
 	let testAccount = await nodemailer.createTestAccount();
 
-	let transporter = nodemailer.createTransport({
+	return nodemailer.createTransport({
 		host: "smtp.ethereal.email",
 		port: 587,
 		secure: false,
@@ -97,8 +144,11 @@ async function sendEmail(emailTo, userId) {
 			pass: testAccount.pass,
 		},
 	});
+}
 
-	// send mail with defined transport object
+async function sendEmailToVerifyUser(emailTo, userId) {
+	const transporter = await getEmailTransporter();
+
 	let info = await transporter.sendMail({
 		from: 'Auth system 🔑<auth@system.com>', // sender address
 		to: `${emailTo}`, // list of receivers
@@ -108,6 +158,35 @@ async function sendEmail(emailTo, userId) {
 
 	console.log("Message sent: %s", info.messageId);
 	console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+}
+
+async function sendEmailToResetPassword(emailTo, token) {
+	const transporter = await getEmailTransporter();
+
+		let info = await transporter.sendMail({
+			from: 'Auth system 🔑<auth@system.com>', // sender address
+			to: `${emailTo}`, // list of receivers
+			subject: "Reset password ✅", // Subject line
+			html: `<b>You have submitted a request to reset your password. Reset the password by clicking <a href="http://localhost:3000/new-password/${token}">here</a>.</b>`, // html body
+		});
+
+
+	console.log("Message sent: %s", info.messageId);
+	console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+}
+
+async function authenticateToken(req, res, next) {
+	const authHeader = req.headers['authorization'];
+	const token = authHeader && authHeader.split(' ')[1];
+
+	jwt.verify(token, process.env["ACCESS_RESET_PASSWORD_SECRET_TOKEN"], (err, result) => {
+		if (err) {
+			return res.status(403);
+		}
+
+		req.userId = result.id;
+		next();
+	});
 }
 
 module.exports = router;

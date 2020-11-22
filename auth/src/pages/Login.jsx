@@ -30,6 +30,7 @@ export default function Login({ onUserAuth, accessToken }) {
 			.then((content) => {
 				if (content.error) {
 					setErrorMessage(content.errorMessage);
+					return;
 				}
 
 				if (content.success) {
@@ -58,7 +59,7 @@ export default function Login({ onUserAuth, accessToken }) {
 						<input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} />
 					</label>
 
-					<p className="help-text">Don't have an account? Sign up <a href="/sign-up">here</a>.</p>
+					<p className="help-text">Don't have an account? Sign up <a href="/sign-up">here</a>. Forgot your password? Reset it <a href="/reset-password">here</a>.</p>
 
 					<button type="submit">Login</button>
 				</div>

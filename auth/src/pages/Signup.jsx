@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useHistory } from "react-router-dom";
 
-export default function Signup() {
+
+export default function Signup({ accessToken }) {
 	const [firstName, setFirstName] = useState('');
 	const [lastName, setLastName] = useState('');
 	const [username, setUsername] = useState('');
@@ -8,6 +10,13 @@ export default function Signup() {
 	const [password, setPassword] = useState('');
 	const [errorMessage, setErrorMessage] = useState('');
 	const [successMessage, setSuccessMessage] = useState('');
+	const history = useHistory();
+
+	useEffect(() => {
+		if (accessToken) {
+			history.push('/my-account');
+		}
+	})
 
 	const signUpUser = (event) => {
 		event.preventDefault();

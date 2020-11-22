@@ -5,3 +5,4 @@ auth-node/package-lock.json
 auth/yarn.lock
 
 auth-node/.env
+.idea

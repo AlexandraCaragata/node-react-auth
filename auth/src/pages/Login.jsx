@@ -1,11 +1,17 @@
-import { useState } from 'react';
-import { useHistory } from "react-router-dom";
+import { useState, useEffect } from 'react';
+import { useHistory } from 'react-router-dom';
 
-export default function Login({ onUserAuth }) {
+export default function Login({ onUserAuth, accessToken }) {
 	const [username, setUsername] = useState('');
 	const [password, setPassword] = useState('');
 	const [errorMessage, setErrorMessage] = useState('');
 	let history = useHistory();
+
+	useEffect(() => {
+		if (accessToken) {
+			history.push('/my-account');
+		}
+	})
 
 	const authenticateUser = (event) => {
 		event.preventDefault();
@@ -27,7 +33,7 @@ export default function Login({ onUserAuth }) {
 				}
 
 				if (content.success) {
-					onUserAuth(content.accessToken);
+					onUserAuth({ accessToken: content.accessToken, userId: content.userId});
 					history.push('/my-account');
 				}
 			});

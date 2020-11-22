@@ -50,7 +50,7 @@ router.post('/auth/login', async (req, res) => {
 	const { username, password } = req.body;
 
 	connection.query(
-		'SELECT hash FROM users WHERE username = ?',
+		'SELECT id, hash FROM users WHERE username = ?',
 		username,
 		async function (error, results, fields) {
 			if (error) {
@@ -70,8 +70,8 @@ router.post('/auth/login', async (req, res) => {
 			}
 
 			if (isAuthenticated) {
-				const accessToken = jwt.sign({ name: username }, process.env.ACCESS_SECRET_TOKEN);
-				return res.status(200).send({ success: true, accessToken });
+				const accessToken = jwt.sign({ id: results[0].id, name: username }, process.env.ACCESS_SECRET_TOKEN);
+				return res.status(200).send({ success: true, accessToken, userId: results[0].id });
 			}
 		});
 });
